@@ -1,25 +1,13 @@
 # gmail_utils.py
 
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+from auth_utils import get_credentials
 import base64
 import email
 import datetime
 
-SCOPES = [
-    'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/spreadsheets'
-]
-CREDENTIALS_FILE = 'credentials.json'
 
-def authenticate_gmail():
-    flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
-    creds = flow.run_local_server(port=0)
-    service = build('gmail', 'v1', credentials=creds)
-    return service
-
-def search_job_application_emails(service, max_results=10, query='application'):
-    # You can customize the query. E.g.: 'subject:application' or label, etc.
+def search_job_application_emails(service, max_results=1, query='is:unread application'):
     results = service.users().messages().list(userId='me', maxResults=max_results, q=query).execute()
     messages = results.get('messages', [])
     return messages
@@ -51,7 +39,8 @@ def get_email_text(service, msg_id):
 
 
 def get_job_application_emails():
-    service = authenticate_gmail()
+    creds = get_credentials()
+    service = build('gmail', 'v1', credentials=creds)
     messages = search_job_application_emails(service)
     emails = []
     for msg in messages:
@@ -67,10 +56,3 @@ def get_job_application_emails():
             date_str = 'Unknown'
         emails.append({'email_text': email_text, 'date_received': date_str})
     return emails
-
-if __name__ == "__main__":
-    emails = get_job_application_emails()
-    for i, email in enumerate(emails, 1):
-        print(f"\n----- Email #{i} -----")
-        print(f"Received: {email['date_received']}")
-        print(email['email_text'])
