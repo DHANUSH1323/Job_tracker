@@ -20,3 +20,6 @@ def print_error(error_msg):
 
 def print_success():
     print("Job application tracking completed successfully.")
+
+def print_agent_decision(reason):
+    print(f"Agent Decision: {reason}")

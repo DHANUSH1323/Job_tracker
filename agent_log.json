@@ -1,0 +1,38 @@
+[
+  {
+    "run_time": "2025-07-01 15:56:05",
+    "emails_processed": 1,
+    "rejections": 0,
+    "offers": 0
+  },
+  {
+    "run_time": "2025-07-01 15:57:19",
+    "emails_processed": 1,
+    "rejections": 1,
+    "offers": 0
+  },
+  {
+    "run_time": "2025-07-01 16:53:04",
+    "emails_processed": 1,
+    "rejections": 1,
+    "offers": 0
+  },
+  {
+    "run_time": "2025-07-01 17:35:28",
+    "emails_processed": 1,
+    "rejections": 0,
+    "offers": 0
+  },
+  {
+    "run_time": "2025-07-01 17:36:43",
+    "emails_processed": 3,
+    "rejections": 1,
+    "offers": 0
+  },
+  {
+    "run_time": "2025-07-01 17:37:08",
+    "emails_processed": 3,
+    "rejections": 1,
+    "offers": 0
+  }
+]
