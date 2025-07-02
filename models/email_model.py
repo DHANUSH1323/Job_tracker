@@ -27,7 +27,6 @@ def get_email_text(service, msg_id):
     msg = service.users().messages().get(userId='me', id=msg_id, format='full').execute()
     payload = msg.get('payload', {})
     parts = payload.get('parts', [])
-    # Try to extract the body from multipart or singlepart emails
     data = None
 
     if parts:
@@ -36,7 +35,6 @@ def get_email_text(service, msg_id):
                 data = part['body'].get('data')
                 break
         if not data and parts:
-            # Fallback to first part
             data = parts[0]['body'].get('data')
     else:
         data = payload.get('body', {}).get('data')
@@ -55,16 +53,13 @@ def get_job_application_emails():
     for msg in messages:
         msg_detail = service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
         email_text = get_email_text(service, msg['id'])
-        # Get internalDate and convert to readable format
         internal_date = msg_detail.get('internalDate')
         if internal_date:
-            # Convert from ms to seconds, then to datetime
             dt = datetime.datetime.fromtimestamp(int(internal_date) / 1000)
             date_str = dt.strftime('%Y-%m-%d %H:%M:%S')
         else:
             date_str = 'Unknown'
         emails.append({'email_text': email_text, 'date_received': date_str})
-        # Log email receipt time for Prophet scheduler (if valid)
         if date_str != 'Unknown':
             log_email_received(date_str)
     return emails

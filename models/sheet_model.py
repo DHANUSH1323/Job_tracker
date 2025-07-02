@@ -12,8 +12,7 @@ def append_to_sheet(sheet_id, info_dict, sheet_name=SHEET_TAB_NAME):
     Appends a row with company, position, status, and date to the specified Google Sheet tab.
     """
     service = get_sheets_service()
-    sheet_range = f"{sheet_name}"  # Best practice: just the tab name, not !A1
-    # sheet_range = f"{sheet_name}!A1"
+    sheet_range = f"{sheet_name}"
     values = [[
         info_dict.get("company", ""),
         info_dict.get("position", ""),

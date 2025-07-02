@@ -10,10 +10,10 @@ PROPHET_MODEL_PATH = "prophet_model.pkl"
 
 def prepare_prophet_data():
     if not os.path.isfile(EMAIL_CSV):
-        # No data, return empty DataFrame
+        #If No data, just return empty DataFrame
         return pd.DataFrame(columns=["ds", "y"])
     df = pd.read_csv(EMAIL_CSV, parse_dates=["received_datetime"])
-    # Group by hour, count emails
+    # Grouping by hour and emails count
     df_hourly = df.groupby(df["received_datetime"].dt.floor("h")).size().reset_index(name="y")
     df_hourly.rename(columns={"received_datetime": "ds"}, inplace=True)
     return df_hourly
@@ -25,7 +25,7 @@ def train_prophet_model(df_hourly):
     return m
 
 def predict_emails_next_hour(model):
-    # Predict for the next 2 hours (including current)
+    # Prediction for the next 2 hours
     now = pd.Timestamp.now().floor('H')
     future = pd.DataFrame({'ds': [now]})
     forecast = model.predict(future)
@@ -33,15 +33,14 @@ def predict_emails_next_hour(model):
     return yhat
 
 def should_run_now(threshold=0.5):
-    # Prepare data
     df_hourly = prepare_prophet_data()
     if df_hourly.empty:
         return True, "No email history yet; running by default."
 
-    # Train or load Prophet
+    # Training Prophet model
     model = train_prophet_model(df_hourly)
 
-    # Predict for the current hour
+    # Prediction for the current hour
     yhat = predict_emails_next_hour(model)
     if yhat > threshold:
         reason = f"Prophet predicts {yhat:.2f} emails this hour; running."
@@ -50,7 +49,6 @@ def should_run_now(threshold=0.5):
         reason = f"Prophet predicts {yhat:.2f} emails this hour; skipping run."
         return False, reason
 
-# If you want to keep logging run stats as before, you can adapt log_run here.
 def log_run(emails_processed, rejections, offers):
     import json
     LOG_FILE = "agent_log.json"
@@ -78,21 +76,18 @@ def get_next_best_time(min_gap_minutes=5):
     df_hourly = prepare_prophet_data()
     now = pd.Timestamp.now().floor('h')
     if df_hourly.shape[0] < 2:
-        # Not enough data, just check again in 5 minutes
         return (now + pd.Timedelta(minutes=min_gap_minutes)).to_pydatetime()
 
     model = train_prophet_model(df_hourly)
 
-    # Predict for the next 24 hours
+    # Prediction for next 24 hours
     future_hours = [now + pd.Timedelta(hours=i) for i in range(1, 25)]
     future = pd.DataFrame({'ds': future_hours})
     forecast = model.predict(future)
 
-    # Find the hour with highest predicted email volume
     idx_max = forecast['yhat'].idxmax()
     next_best = forecast.loc[idx_max, 'ds']
 
-    # If the best is "too soon," set a reasonable min_gap
     min_next = now + pd.Timedelta(minutes=min_gap_minutes)
     if next_best < min_next:
         next_best = min_next
