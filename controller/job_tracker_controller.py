@@ -3,7 +3,6 @@
 from models.email_model import get_job_application_emails
 from models.extractor import extract_job_info
 from models.sheet_model import append_to_sheet
-from config import SHEET_ID, SHEET_NAME, SHEET_TAB_NAME
 from models.agent_brain import should_run_now, log_run
 from view.console_view import print_agent_decision
 
@@ -17,7 +16,7 @@ from view.console_view import (
     print_error,
 )
 
-def run_job_tracker(sheet_name=SHEET_TAB_NAME):
+def run_job_tracker(sheet_id, tab_name, creds):
     should_run, reason = should_run_now()
     print_agent_decision(reason)
     if not should_run:
@@ -37,8 +36,7 @@ def run_job_tracker(sheet_name=SHEET_TAB_NAME):
         info = extract_job_info(email['email_text'])
         info['date_received'] = email['date_received']
         print_extracted_info(info)
-        # append_to_sheet(SHEET_ID, info, sheet_name=SHEET_NAME)
-        append_to_sheet(SHEET_ID, info, SHEET_TAB_NAME)
+        append_to_sheet(sheet_id, info, tab_name, creds)
         print_written_to_sheet()
         if info["status"].lower() == "rejected":
             rejections += 1
@@ -47,5 +45,5 @@ def run_job_tracker(sheet_name=SHEET_TAB_NAME):
     print_success()
     log_run(len(emails), rejections, offers)
 
-if __name__ == "__main__":
-    run_job_tracker()
+# if __name__ == "__main__":
+#         run_job_tracker("your_sheet_id_here", "your_tab_name_here", None)

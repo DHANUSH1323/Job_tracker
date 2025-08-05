@@ -1,18 +1,11 @@
 from googleapiclient.discovery import build
-from auth_utils import get_credentials
-from config import SHEET_ID, SHEET_TAB_NAME
 
-def get_sheets_service():
-    creds = get_credentials()
-    service = build('sheets', 'v4', credentials=creds)
-    return service
-
-def append_to_sheet(sheet_id, info_dict, sheet_name=SHEET_TAB_NAME):
+def append_to_sheet(sheet_id, info_dict, tab_name, creds):
     """
     Appends a row with company, position, status, and date to the specified Google Sheet tab.
     """
-    service = get_sheets_service()
-    sheet_range = f"{sheet_name}"
+    service = build('sheets', 'v4', credentials=creds)
+    sheet_range = f"{tab_name}"
     values = [[
         info_dict.get("company", ""),
         info_dict.get("position", ""),
