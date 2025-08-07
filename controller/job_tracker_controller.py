@@ -36,6 +36,11 @@ def run_job_tracker(sheet_id, tab_name, creds):
         info = extract_job_info(email['email_text'])
         info['date_received'] = email['date_received']
         print_extracted_info(info)
+        
+        # Print a visible red flag alert if detected by AI
+        if info.get("is_red_flag", False):
+            print("\n⚠️  AI RED FLAG DETECTED: {}".format(info.get("red_flag_reason", "")))
+
         append_to_sheet(sheet_id, info, tab_name, creds)
         print_written_to_sheet()
         if info["status"].lower() == "rejected":
@@ -46,4 +51,4 @@ def run_job_tracker(sheet_id, tab_name, creds):
     log_run(len(emails), rejections, offers)
 
 # if __name__ == "__main__":
-#         run_job_tracker("your_sheet_id_here", "your_tab_name_here", None)
+#     run_job_tracker("your_sheet_id_here", "your_tab_name_here", None)

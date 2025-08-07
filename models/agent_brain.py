@@ -10,10 +10,21 @@ PROPHET_MODEL_PATH = "prophet_model.pkl"
 
 def prepare_prophet_data():
     if not os.path.isfile(EMAIL_CSV):
-        #If No data, just return empty DataFrame
+        # If no file, just return empty DataFrame
         return pd.DataFrame(columns=["ds", "y"])
-    df = pd.read_csv(EMAIL_CSV, parse_dates=["received_datetime"])
-    # Grouping by hour and emails count
+    try:
+        df = pd.read_csv(EMAIL_CSV)
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame(columns=["ds", "y"])
+    if df.empty or "received_datetime" not in df.columns:
+        return pd.DataFrame(columns=["ds", "y"])
+    # Always convert, even if empty
+    df["received_datetime"] = pd.to_datetime(df["received_datetime"], errors="coerce")
+    # Only keep valid datetimes
+    df = df[df["received_datetime"].notnull()]
+    if df.empty:
+        return pd.DataFrame(columns=["ds", "y"])
+    # Group by hour
     df_hourly = df.groupby(df["received_datetime"].dt.floor("h")).size().reset_index(name="y")
     df_hourly.rename(columns={"received_datetime": "ds"}, inplace=True)
     return df_hourly
@@ -26,7 +37,7 @@ def train_prophet_model(df_hourly):
 
 def predict_emails_next_hour(model):
     # Prediction for the next 2 hours
-    now = pd.Timestamp.now().floor('H')
+    now = pd.Timestamp.now().floor('h')
     future = pd.DataFrame({'ds': [now]})
     forecast = model.predict(future)
     yhat = forecast.loc[0, "yhat"]
